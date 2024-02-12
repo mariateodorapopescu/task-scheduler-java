@@ -1,46 +1,38 @@
-# tema2
+# Task Scheduler in Java
 
-Popescu Maria-Teodora
-332CC
+the implementation of the project was realized in the MyDispatcher and MyHost classes.
 
-Asa cum s-a mention si in cerinta, implementarea temei s-a realizat in clasele MyDispatcher si MyHost.
+## 1. MyDispatcher:
 
-1. MyDispatcher:
+### addTask:
 
-->addTask:
+- I took each policy separately and tried to pass on the task to that host that fits according to the rule.
+- Thus, I thought: to make a switch (I didn't want to have too many ifs, it seemed redundant) and I took the types.
+- Thus, at round robin, I incremented a number that will represent the index of the host to which it will be sent, and I repeated it to 0 when the number of hosts was reached, so that it would not exceed the number of hosts and somehow cycle. I used the atomic variable so that the race condition does not occur.
+- At the shortest queue, I put the queues on a collection to get the minimum, that is, the one with the shortest length, according to the comparator.
+- At SITA it was quite simple, I took the function of the enum where to go, this time with if.
+- At Least work left, I proceeded similarly to the shortest queue.
+- Only the addTask method was to be implemented here.
 
-	am luat fiecare politica in parte si am încercat sa dau mai departe taskul acelui host care se potrivește conform regulii. 
-	Astfel, m-am gândit ca: sa fac un switch (nu am vrut sa am prea multe if-uri, mi s-a părut redundant) si am luat pe tipuri. 
-	Astfel, la round robin am pus sa incrementeze un număr care va reprezenta indicele hostului la care se va trimite, si l-am repetat la 0 când se ajungea la numărul de hosturi, ca sa nu depășească numărul de hosturi si cumva sa se cicleze. Am folosit variabila atomică ca sa nu aibă loc race condition. 
-	La shortest queue am pus cozile pe o colectie ca sa iau minimul, adică pe cea cu lungimea cea mai mica, conform comparatorului. 
-	La SITA a fost destul de simplu, am luat in funcție de enum unde sa se ducă, de data asta cu if. 
-	La Least work left am procedat asemanator ca la shortest queue. 
+## 2. MyHost:
 
-->Aici a fost de implementat numai metoda addTask.
+- Instead, in the myHost class I implemented several methods, such as run, addTask, getQueueSize, getWorkLeft and shutdown, as well as the host queue.
+- Basically, it is based on synchronization, using a reentrant lock to signal the critical sections and the addition or removal of the task from the queue. When a task is removed from the queue, it is run. The current, running task is not the one at the top of the queue (this only happens at the beginning).
 
+### Queue:
+Thus, we used a PriorityBlockingQueue which ensures that the tasks are ordered according to priority and, in case of equality, according to their start time.
 
-------------------------------------------------------------------------------------------------
+### run:
+-In the run method I simulated the running of a task, doing a busywaiting with sleep, depending on the duration. I know that in real life it doesn't happen like that, i.e. it doesn't run all the way, it runs a bit and stops, but at least it can be applied for certain conditions, like if it's not preemptible.
 
-2. MyHost:
+### addTask:
+- Instead, the logic of preempting (I have an attempt to do this here) with the re-ordering according to preemption and priorities I realized in addTask.
 
--> In schimb, in clasa myHost am implementat mai multe metode, cum ar fi run, addTask, getQueueSize, getWorkLeft si shutdown, dar si coada din host. 
+### Shutdown:
+- Shutdown is based on changing the ok variable, which indicates whether the host is running or not.
 
--> In mare, se bazează pe sincronizare, folosind un lock reentrant care sa semnaleze secțiunile critice si adăugarea sau scoaterea taskului din coada. Când se scoate din coada un task, se rulează. Taskul current, cel care rulează nu este cel din vârful cozii (aceasta se întâmplă numai la început). 
+### getQueueSize:
+- I turned the length of the tail and that's it.
 
--- Queue:
-	Astfel, am folosit o PriorityBlockingQueue ce asigură că task-urile sunt ordonate în funcție de prioritate și, în caz de egalitate, în funcție de timpul lor de start. 
-
--- run:
-	In metoda run am simulat rularea unui task, făcând un busywaiting cu sleep, in funcție de durata. Știu ca in viața reală nu se întâmplă așa, adică nu rulează per total, ci rulează puțin si se oprește, dar măcar se poate aplica pentru anumite condiții, cum ar fi daca nu e preemptibil. 
-
--- addTask:
-	In schimb, logica de a preempta (am aici o tentativa de a face asta) cu re-ordonarea in funcție de preemptare si priorități am realizat-o in addTask.
-
--- Shutdown:
-	Shutdown se bazează pe schimbarea variabilei ok, care indică daca hostul rulează sau nu.
-
--- getQueueSize:
-	am întors lungimea cozii si atât.
-
--- getWorkLeft:
-Am făcut suma din timpii left ale tuturor taskurilor din coada hostului
+### getWorkLeft:
+- I made the sum of the left times of all the tasks in the host queue
